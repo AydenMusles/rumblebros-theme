@@ -6,7 +6,8 @@ This is the custom District theme for our Shopify store rumblebrothers.com
     - Shows selection option right under main navigation
     - If a vehilce is selected, it will refresh any shopify collection that is related to car parts to match the current vehicle selected
     - Each producted is tagged with appropriate year_, make_, model_, and trim_ tags as that's how Shopify sorts collections
-    - Confirms vehicle fitment on the product's page  
+    - Confirms vehicle fitment on the product's page
+    
 All of my custom features reside in src/layout/theme.liquid, src/assets/theme.scss.liquid, src/assets/bc-sf-filter.js, src/snippets/product-grid-item.liquid, and src/snippets/product-list-item.liquid.  
 Most of what I've done is small, I have made comments where my custom code starts and ends in each file.
 ## I've also made a few custom backend API apps using Python (soon to be Ruby/Ruby on Rails)
