@@ -1,0 +1,412 @@
+<!doctype html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="{{ shop.locale }}"> <![endif]-->
+<!--[if IE 9 ]><html class="ie9 no-js"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> <html class="no-js" lang="{{ shop.locale }}"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="{{ settings.primary_accent_color }}">
+
+  {% if settings.favicon != blank %}
+  <link rel="shortcut icon" href="{{ settings.favicon | img_url: '32x32' }}" type="image/png" />
+  {% endif %}
+
+  <title>
+    {{ page_title }}{% if current_tags %}{% assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags }}{% endif %}{% if current_page != 1 %} &ndash; {{ 'general.meta.page' | t: page: current_page }}{% endif %}{% unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless %}
+  </title>
+
+  {% if page_description %}
+    <meta name="description" content="{{ page_description | escape }}">
+  {% endif %}
+
+  {% include 'social-meta-tags' %}
+
+  {{ content_for_header }}
+
+  {% include 'fonts' %}
+  {{ 'theme.scss.css' | asset_url | stylesheet_tag }}
+  
+  <!-- Font-Awesome ================================================== -->
+  {{ 'font-awesome.min.css' | asset_url | stylesheet_tag }}
+
+  {% if template contains 'customers' %}
+    {{ 'shopify_common.js' | shopify_asset_url | script_tag }}
+  {% endif %}
+
+  {% include 'oldIE-js' %}
+
+  <script>
+    window.StyleHatch = window.StyleHatch || {};
+    StyleHatch.currencyFormat = {{ shop.money_format | json }};
+    StyleHatch.Strings = {
+      instagramAddToken: {{ 'homepage.onboarding.instagram_add_token' | t | json }},
+      instagramInvalidToken: {{ 'homepage.onboarding.instagram_invalid_token' | t | json }},
+      instagramRateLimitToken: {{ 'homepage.onboarding.instagram_ratelimit_token' | t | json }},
+      addToCart: {{ 'products.product.add_to_cart' | t | json }},
+      soldOut: {{ 'products.product.sold_out' | t | json }}
+    }
+    StyleHatch.ajaxCartEnable = {{ settings.ajax_cart_enable }};
+    // Post defer
+    window.addEventListener('DOMContentLoaded', function() {
+      (function( $ ) {
+      {% comment %}
+        Add JavaScript fuctionality that relies on jQuery here
+        this will allow jQuery to properly load before the calls are made
+      {% endcomment %}
+      // ------- START VEHICLE PICKER -------
+        var dropDowns = function() {
+          var ddObj = this;
+          this.vehicle = [];
+          this.years = [];
+          this.caryears = [];
+          this.makes = [];
+          this.makes_subset = [];
+          this.models = [];
+          this.models_subset = [];
+          this.submodels = [];
+          var year_start = 1993;
+          var today = new Date();
+          var year_end = today.getFullYear()+1;
+
+          var year_counter = year_start;
+          while(year_counter <= year_end){
+            this.years.push(year_end);
+            this.caryears[year_end]=[];
+            year_end--;
+          }
+          $.each(this.years, function(i, year){
+            $('#model_year').append($('<option>', {value : year, text : year}));
+            // testing to see if years function is working
+            //console.log(year)
+          });
+
+          // disable the dropdowns
+          $('#model_make, #model_name, #model_trim, #model_submit').prop('diabled', true);
+
+          // get JSON
+          $.getJSON('{{ 'models.json' | asset_url }}', function(cars){
+            $.each(cars, function(i, car){
+              if($.inArray(Number(car.model_year), ddObj.years) > -1) {
+                ddObj.caryears[car.model_year].push(car);
+                //console.log(ddObj);
+              }
+            });
+          });
+
+          // register handler for year drop-down
+          $('#model_year').change(function(){
+            var selection = $('#model_year').val();
+            ddObj.makes = [];
+            ddObj.makes_subset = [];
+            $('#model_submit').show();
+            $('#model_make, #model_name').empty();
+            $('#model_make').prop('disabled', false);
+            $('#model_make').append($('<option>', {value : '', disabled: 'disabled', selected: 'seleceted', text: 'Select Your Make'}));
+            $('#model_name').append($('<option>', {value : '', disabled: 'disabled', selected: 'seleceted', text: 'Select Your Model'}));
+
+            $.each(ddObj.caryears[selection], function(i, car){
+              if ($('#model_year').val()==car.model_year && $.inArray(car.model_make, ddObj.makes)=== -1) {
+                ddObj.makes.push(car.model_make);
+                $('#model_make').append($('<option>', {value: car.model_make, text:car.model_make}));
+              }
+              if ($('#model_year').val()==car.model_year) {
+                ddObj.makes_subset.push(car);
+              }
+            });
+          });
+
+          // register handler for make dropdown
+          $('#model_make').change(function(){
+            ddObj.models = [];
+            ddObj.models_subset = [];
+            $('#model_name').empty();
+            $('#model_name').prop('disabled', false);
+            $('#model_name').append($('<option>', {value: '', disabled: 'disabled', selected: 'selected', text: 'Select Your Model'}));
+            $.each(ddObj.makes_subset, function(i, car){
+              if( $( '#model_make').val() == car.model_make && $.inArray( car.model_name, ddObj.models ) === -1 ) {
+                ddObj.models.push( car.model_name );
+                $( '#model_name' ).append($('<option>', { value : car.model_name , text: car.model_name}));
+              }
+              if ($('#model_make').val()==car.model_make) {
+                ddObj.models_subset.push(car);
+              }
+            });
+          });
+
+          // register handler for model dropdown
+          $('#model_name').change(function(){
+            ddObj.submodels = [];
+            $('#model_trim').empty();
+            $('#model_trim').prop('disabled', false);
+            $('#model_trim').append($('<option>', {value: '', disabled: 'disabled', selected: 'selected', text: 'Select Your Trim'}));
+            $.each(ddObj.models_subset, function(i, car){
+              if($('#model_name').val()==car.model_name && $.inArray(car.model_trim, ddObj.submodels)===-1) {
+                ddObj.submodels.push(car.model_trim);
+                $('#model_trim').append($('<option>', {value: car.model_trim, text: car.model_trim}));
+              }
+            });
+
+            // handler for FR-S & 86
+            if($('#model_name').val()=="FR-S" || $('#model_name').val()=="86") {
+              $('#model_trim option:contains(All)').prop('selected', true);
+              $('#model_submit').prop('disabled', false);
+            }
+          });
+
+          // handler for submit button after selecting trim
+          $('#model_trim').change(function(){
+            $('#model_submit').prop('disabled', false);
+          });
+
+          // handler for 'select vehicle' button
+          $('#model_submit').click(function(e){
+            e.preventDefault();
+            var current = window.location.href;
+            var tagged = current.includes("+");
+            var year = $( '#model_year' ).val();
+            var make = $( '#model_make' ).val();
+            var model = $( '#model_name' ).val();
+            var trim = $( '#model_trim' ).val();
+            document.cookie = "year="+year+";expires=31 Dec 2020 12:00:00 UTC; path=/";
+            document.cookie = "make="+make+";expires=31 Dec 2020 12:00:00 UTC; path=/";
+            document.cookie = "model="+model+";expires=31 Dec 2020 12:00:00 UTC; path=/";
+            document.cookie = "trim="+trim+";expires=31 Dec 2020 12:00:00 UTC; path=/";
+            if(tagged) {
+            	var cur_loc = current.substring(0, current.lastIndexOf("/"));
+              	year = year.replace(/\s/g, "-");
+                make = make.replace(/\s/g, "-");
+                model = model.replace(/\s/g, "-");
+                trim = trim.replace(/\s/g, "-")
+                trim = trim.replace(/\./g,'');
+              	col = "collection";
+              	// Old ymm url structure
+                // var end = "/year_"+year + "+make_" + make + "+model_" + model + "+trim_" + trim;
+              	// New ymm url structure
+              	var end = "?_=pf&pf_t_vehicle_make=make_" + make + "?_=pf&pf_t_vehicle_model=model_" + model;
+                var a = current.includes(col);
+              if (a) location.href = cur_loc + end;
+              else location.href = cur_loc;
+            }
+            else window.location.reload();
+          });
+
+          // handler for show selectors button
+          $('#show_selectors').click(function(e){
+            e.preventDefault();
+            if($('#model_make').is(":visible")) {
+              $('#model_make, #model_name, #model_trim, #model_year, #model_submit').hide();
+              $('#show_selectors').text('Show Selectors');
+            } else {
+              $('#model_make, #model_name, #model_trim, #model_year, #model_submit').show();
+              $('#model_submit').text('Change Vehicle');
+              $('#show_selectors').text('Hide Selectors');
+            }
+          });
+        
+        // handler for Choose a Vehicle button
+        $('#choose_a_vehicle').click(function(e){
+        	e.preventDefault();
+          if($('#model_selector').is(":hidden")) {
+            $('.fa').removeClass('fa-car');
+            $('.fa').addClass('fa-times');
+            $('#model_selector').slideDown("fast", function(){
+            });
+          } else {
+            $('.fa').removeClass('fa-times');
+            $('.fa').addClass('fa-car');
+            $('#model_selector').slideUp("fast", function(){
+            });
+          }
+        });
+
+          // handler for 'clear vehicle' button
+          $("#model_clear").click(function(e){
+            e.preventDefault();
+            document.cookie = 'year=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'make=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'model=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'trim=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.reload();
+          });
+
+
+          // check if current window is a collections
+          function codeAddress() {
+              $('#model_submit').hide();
+
+              // Sets current to be the current URL
+              var current = window.location.href;
+              var col = "collections";
+
+              // Set ymm cookies to separate variables
+              make = getCookie("make");
+              model = getCookie("model");
+              year = getCookie("year");
+              trim = getCookie("trim");
+              var ct = false;
+              if (make != '') {
+                ct = true;
+              }
+
+              // update selection area if a vehicle is set
+              if (make && model && year && trim) {
+                $('#choose_a_vehicle').html(year + ' ' + make + ' ' + model + ' ' + trim + '&nbsp;<i class="fa fa-car" aria-hidden="true"</i>');
+                $('#model_make, #model_name, #model_trim').prop('disabled', true);
+                // $('#model_make, #model_name, #model_trim, #model_year').hide();
+                $('#model_make, #model_name, #model_trim').val=('');
+                $('#model_year option:contains('+year+')').prop('selected', true);
+                $('#model_make').append($('<option>', {selected: 'selected', value: make, text: make}));
+                $('#model_name').append($('<option>', {selected: 'selected', value: model, text: model}));
+                $('#model_trim').append($('<option>', {selected: 'selected', value: trim, text: trim}));
+                $('#model_clear').show();
+                $('#model_submit').prop('disabled', true);
+                $('#clear_selection').prop('hidden', false);
+              } else {
+                $('#model_submit').show();
+                $('#model_clear').hide();
+              }
+           	
+            // combine ymm to a regular sentence form
+            
+            ymm = year + ' ' + make + ' ' + model + ' ' + trim;
+
+              // combine ymm to a proper tag string
+              year = year.replace(/\s/g, "%20");
+              make = make.replace(/\s/g, "%20");
+              model = model.replace(/\s/g, "%20");
+              trim = trim.replace(/\s/g, "%20")
+              // trim = trim.replace(/\./g,'');
+              // old url structure
+              // var end = "year_"+year + "+make_" + make + "+model_" + model + "+trim_" + trim;
+              // new url structure
+              var end = "?_=pf&pf_t_vehicle_year=year_" + year + "&pf_t_vehicle_make=make_" + make + "&pf_t_vehicle_model=model_" + model + "&pf_t_vehicle_trim=trim_" + trim;
+              var c = current.includes(end);
+              var a = current.includes(col);
+              var sticker = current.includes('stickers');
+              var apparel = current.includes('apparel');
+			  var accessories = current.includes('accessories');
+              var banners = current.includes('banners');
+              var wave2 = current.includes('wave2');
+              var newreleases = current.includes('new-releases');
+              var p = current.includes('products');
+              var lastChar = current[current.length -1];
+              var d = lastChar.includes("/");
+              var tagged = current.includes("?");
+			  var notPart = false;
+            if (!sticker && !apparel && !accessories && !banners && !wave2 && !newreleases) {
+            	notPart = true;
+            }
+              // logic for appending proper tags the end of the url for vehicle selection
+              if ((!c && a) && make != '' && notPart) {
+                  if (p == false && tagged == false) {
+                    location.href = location.href + end;
+                  } else if (p == false && tagged == true) {
+                    var cur_loc = current.substring(0, current.lastIndexOf("?"));
+                    location.href = cur_loc + end;
+                  }
+              }
+            
+            
+              // show part will fit vehicle on product page
+              if (current.includes('collection') && make) {
+                if (!sticker || !apparel || !accessories || !banners || !wave2 || !newreleases) {
+                  $('.fitment').prop('hidden', false);
+                  $('.fitment').html('<p>This part will fit your ' + ymm + '.</p>');
+                }
+              }
+              // logic for removing tags if there's no vehicle selection
+              else if(tagged) {
+                  if (ct == false) {
+                    var cur_loc = current.substring(0, current.lastIndexOf("?"));
+                    //location.href = cur_loc
+                  }
+              } else {
+                return "";
+              }
+          }
+
+          // gets cookie
+          function getCookie(cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for(var i = 0; i <ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+          }
+          // sets function to run on window load
+          window.onload = codeAddress;
+        }
+        // run selector functions
+        var dd = new dropDowns();
+      
+      // ------- END VEHICLE PICKER -------
+
+      {% if newHash %}
+        $(function() {
+          StyleHatch.updateHash('{{ newHash }}');
+        });
+      {% endif %}
+      {% if resetPassword %}
+        $(function() {
+          StyleHatch.resetPasswordSuccess();
+        });
+      {% endif %}
+      })(jq223);
+    });
+    document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+  </script>
+
+  <script type="text/javascript">
+    window.lazySizesConfig = window.lazySizesConfig || {};
+    window.lazySizesConfig.expand = 1200;
+    window.lazySizesConfig.loadMode = 3;
+  </script>
+  <!--[if (gt IE 9)|!(IE)]><!--><script src="{{ 'lazysizes.min.js' | asset_url }}" async="async"></script><!--<![endif]-->
+  <!--[if lte IE 9]><script src="{{ 'lazysizes.min.js' | asset_url }}"></script><![endif]-->
+  <!--[if (gt IE 9)|!(IE)]><!--><script src="{{ 'vendor.js' | asset_url }}" defer="defer"></script><!--<![endif]-->
+  <!--[if lte IE 9]><script src="{{ 'vendor.js' | asset_url }}"></script><![endif]-->
+  {% if settings.show_multiple_currencies %}
+    {% include 'currencies' %}
+  {% endif %}
+  <!--[if (gt IE 9)|!(IE)]><!--><script src="{{ 'theme.min.js' | asset_url }}" defer="defer"></script><!--<![endif]-->
+  <!--[if lte IE 9]><script src="{{ 'theme.min.js' | asset_url }}"></script><![endif]-->
+
+
+
+
+<!--begin-bc-sf-filter-css-->
+  {{ 'bc-sf-filter.css' | asset_url | stylesheet_tag }}
+<!--end-bc-sf-filter-css-->
+</head>
+
+<body id="{{ page_title | handle }}" class="{% if customer %}customer-logged-in {% endif %}template-{{ template | replace: '.', ' ' | truncatewords: 1, '' | handle }}" data-template-directory="{{ template.directory }}" data-template"{{ template.name }}" >
+
+  <div id="page">
+    {% section 'promos' %}
+    {% include 'header-util' %}
+    {% section 'header' %}
+
+    <main class="main-content" role="main">
+      {{ content_for_layout }}
+    </main>
+
+    {% section 'footer' %}
+  </div>
+
+  <!-- District v2.3.3 -->
+
+<!--begin-bc-sf-filter-js-->
+  {% include 'bc-sf-filter' %}
+<!--end-bc-sf-filter-js-->
+</body>
+</html>

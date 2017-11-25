@@ -1,0 +1,102 @@
+{% assign products_per_page = 24 %}
+{% assign enable_sidebar = true %}
+
+<section class="collection search-results" data-section-id="{{ section.id }}" data-section-type="search-template">
+  <div class="wrapper">
+
+    <div class="grid {% unless enable_sidebar %}full-width{% endunless %}">
+      <div class="collection-container">
+        <div class="search-wrapper">
+          {% include 'search-bar' %}
+        </div>
+
+        <header class="collection-header">
+          <div class="container">
+            <h1 class="bc-sf-search-result-header"></h1>
+            
+            <div class="sort-by">
+              <div id="bc-sf-filter-top-sorting"></div>
+              <div id="bc-sf-filter-top-display-type" class="layout-options"></div>
+            </div>
+          </div>
+        </header>
+
+        {% comment %} Filter Sidebar {% endcomment %}
+        {% if enable_sidebar %}
+          <div class="mobile-aside-container">
+            <div id="bc-sf-filter-tree-mobile"></div>
+            <div class="nav-container">
+              <div id="bc-sf-filter-tree"></div>
+            </div>
+          </div>
+        {% comment %} Filter On Top {% endcomment %}
+        {% else %}
+          <div id="bc-sf-filter-tree-h"></div>
+          <div id="bc-sf-filter-tree-mobile"></div>
+          <div id="bc-sf-filter-tree"></div>
+        {% endif %}
+
+        <div id="bc-sf-filter-products" class="products products-grid {% unless enable_sidebar %}full-width{% endunless %}"></div>
+        
+        <footer class="collection-footer">
+          <ul class="pagination" id="bc-sf-filter-bottom-pagination"></ul>
+          <div id="bc-sf-filter-load-more"></div>
+        </footer>
+      </div>
+
+      {% if enable_sidebar %}
+        <div class="aside-container">
+          <aside>
+            <div class="nav-container">
+              <div id="bc-sf-filter-tree2"></div>
+            </div>
+          </aside>
+        </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+  // Declare bcSfFilterConfig variable
+  var bcSfFilterConfig = {
+    label: {
+      refine: "{{ 'product_filter_search.refine' | t }}",
+      refine_mobile: "{{ 'product_filter_search.refine_mobile' | t }}",
+      clear: "{{ 'product_filter_search.clear' | t }}",
+      clear_all: "{{ 'product_filter_search.clear_all' | t }}",
+      apply: "{{ 'product_filter_search.apply' | t }}",
+      breadcrumb_home: {% if product_filter_search.breadcrumb_home != blank %} {{ 'product_filter_search.breadcrumb_home' | t }}" {% else %} "Home" {% endif %},
+      load_more: {% assign temp = 'product_filter_search.load_more' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Load more Products" {% endunless %},
+      show_limit: {% assign temp = 'product_filter_search.show_limit' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Show" {% endunless %},
+      sorting: {% assign temp = 'collections.sorting.title' | t  %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Sorting" {% endunless %},
+      sorting_best_selling: {% assign temp = 'collections.sorting.best_selling' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Best Selling" {% endunless %},
+      sorting_featured: {% assign temp = 'collections.sorting.featured' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Featured" {% endunless %},
+      sorting_title_ascending: {% assign temp = 'collections.sorting.az' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Alphabetically, A-Z" {% endunless %},
+      sorting_title_descending: {% assign temp = 'collections.sorting.za' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Alphabetically, Z-A" {% endunless %},
+      sorting_price_ascending: {% assign temp = 'collections.sorting.price_ascending' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Lowest Price" {% endunless %},
+      sorting_price_descending: {% assign temp = 'collections.sorting.price_descending' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Highest Price" {% endunless %},
+      sorting_date_ascending: {% assign temp = 'collections.sorting.date_ascending' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Date, Old to New" {% endunless %},
+      sorting_date_descending: {% assign temp = 'collections.sorting.date_descending' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Date, New to Old" {% endunless %},
+      sorting_sale_descending: {% assign temp = 'collections.sorting.sale_descending' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "% Off" {% endunless %},
+      sorting_relevance: {% assign temp = 'collections.sorting.relevance' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} "Relevance" {% endunless %},
+      search_general_title: "{{ 'general.search.title' | t }}",
+      search_result_header: '{{ 'general.search.results_for_html' | t }}',
+      search_result_empty: '{{ 'general.search.no_results_html' | t }}',
+      search_result_number: {% assign temp = 'product_filter_search.search_result_number' | t %} {% unless temp contains 'translation missing'  %} "{{ temp }}" {% else %} {% raw %}'Showing {{ count }} results for "{{ terms }}"'{% endraw %} {% endunless %},
+
+      sale: "{{ 'products.product.on_sale' | t }}",
+      sold_out: "{{ 'products.product.sold_out' | t }}",
+      from_price: "{{ 'products.general.from' | t }}",
+      grid_view: "{{ 'collections.general.grid_view' | t }}",
+      list_view: "{{ 'collections.general.list_view' | t }}",
+    },
+    custom: {
+      products_per_page: {{ products_per_page }},
+      show_vendors: {{ settings.show_vendors }},
+      variant_rollover: {{ settings.variant_rollover }}
+    },
+  };
+</script>
