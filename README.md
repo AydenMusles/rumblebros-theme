@@ -12,8 +12,7 @@ This is the custom District theme for our Shopify store rumblebrothers.com
 2. Auto update prices from manufacturers
 ## We also use the following Shopify apps:
 1. Bespoke Shipping  
-
-..._I've customized this app A LOT with their PHP scripts. I'll upload this to a separate repo in the future as it could be helpful. Their example scripts aren't that great_
+⋅⋅⋅_I've customized this app A LOT with their PHP scripts. I'll upload this to a separate repo in the future as it could be helpful. Their example scripts aren't that great_  
 2. Product Discounts
 3. Kit
 4. Product Filter & Search
