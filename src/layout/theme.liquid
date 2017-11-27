@@ -38,6 +38,7 @@
   {% include 'oldIE-js' %}
 
   <script>
+  /* Stylehatch Theme */
     window.StyleHatch = window.StyleHatch || {};
     StyleHatch.currencyFormat = {{ shop.money_format | json }};
     StyleHatch.Strings = {
@@ -55,7 +56,8 @@
         Add JavaScript fuctionality that relies on jQuery here
         this will allow jQuery to properly load before the calls are made
       {% endcomment %}
-      // ------- START VEHICLE PICKER -------
+        
+        /* Start Vehicle Picker */
         var dropDowns = function() {
           var ddObj = this;
           this.vehicle = [];
@@ -70,32 +72,32 @@
           var today = new Date();
           var year_end = today.getFullYear()+1;
 
+          /* generate years from and to for 'Years' dropdown */
           var year_counter = year_start;
           while(year_counter <= year_end){
             this.years.push(year_end);
             this.caryears[year_end]=[];
             year_end--;
           }
+
+          /* append all years to the mode_year selector */
           $.each(this.years, function(i, year){
             $('#model_year').append($('<option>', {value : year, text : year}));
-            // testing to see if years function is working
-            //console.log(year)
           });
 
-          // disable the dropdowns
+          /* disable other dropdowns */
           $('#model_make, #model_name, #model_trim, #model_submit').prop('diabled', true);
 
-          // get JSON
+          /* get JSON of years, makes, models, trims */
           $.getJSON('{{ 'models.json' | asset_url }}', function(cars){
             $.each(cars, function(i, car){
               if($.inArray(Number(car.model_year), ddObj.years) > -1) {
                 ddObj.caryears[car.model_year].push(car);
-                //console.log(ddObj);
               }
             });
           });
 
-          // register handler for year drop-down
+          /* handler for years dropdown  */
           $('#model_year').change(function(){
             var selection = $('#model_year').val();
             ddObj.makes = [];
@@ -117,7 +119,7 @@
             });
           });
 
-          // register handler for make dropdown
+          /* handler for makes dropdown */
           $('#model_make').change(function(){
             ddObj.models = [];
             ddObj.models_subset = [];
@@ -135,7 +137,7 @@
             });
           });
 
-          // register handler for model dropdown
+          /* handler for models dropdown */
           $('#model_name').change(function(){
             ddObj.submodels = [];
             $('#model_trim').empty();
@@ -148,19 +150,19 @@
               }
             });
 
-            // handler for FR-S & 86
+            /* handler for if vehicle selection is FR-S, 86, or BRZ */
             if($('#model_name').val()=="FR-S" || $('#model_name').val()=="86") {
               $('#model_trim option:contains(All)').prop('selected', true);
               $('#model_submit').prop('disabled', false);
             }
           });
 
-          // handler for submit button after selecting trim
+          /* handler for trims dropdown */
           $('#model_trim').change(function(){
             $('#model_submit').prop('disabled', false);
           });
 
-          // handler for 'select vehicle' button
+          /* handler for vehicle selection button */
           $('#model_submit').click(function(e){
             e.preventDefault();
             var current = window.location.href;
@@ -181,9 +183,9 @@
                 trim = trim.replace(/\s/g, "-")
                 trim = trim.replace(/\./g,'');
               	col = "collection";
-              	// Old ymm url structure
+              	// Old ymm url without a search/filter plugin
                 // var end = "/year_"+year + "+make_" + make + "+model_" + model + "+trim_" + trim;
-              	// New ymm url structure
+              	// New ymm url structure that utilizes Product Filter & Search Shopify app
               	var end = "?_=pf&pf_t_vehicle_make=make_" + make + "?_=pf&pf_t_vehicle_model=model_" + model;
                 var a = current.includes(col);
               if (a) location.href = cur_loc + end;
@@ -192,7 +194,7 @@
             else window.location.reload();
           });
 
-          // handler for show selectors button
+          /* handler for show selectors button */
           $('#show_selectors').click(function(e){
             e.preventDefault();
             if($('#model_make').is(":visible")) {
@@ -205,7 +207,7 @@
             }
           });
         
-        // handler for Choose a Vehicle button
+        /* handler for choose a vehicle button */
         $('#choose_a_vehicle').click(function(e){
         	e.preventDefault();
           if($('#model_selector').is(":hidden")) {
@@ -221,7 +223,7 @@
           }
         });
 
-          // handler for 'clear vehicle' button
+          /* handler for clear vehicle */
           $("#model_clear").click(function(e){
             e.preventDefault();
             document.cookie = 'year=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -232,15 +234,15 @@
           });
 
 
-          // check if current window is a collections
+          /* check if current page is a collection */
           function codeAddress() {
               $('#model_submit').hide();
 
-              // Sets current to be the current URL
+              /* sets current to the current URL */
               var current = window.location.href;
               var col = "collections";
 
-              // Set ymm cookies to separate variables
+              /* sets YMM cookies to variables */
               make = getCookie("make");
               model = getCookie("model");
               year = getCookie("year");
@@ -250,11 +252,10 @@
                 ct = true;
               }
 
-              // update selection area if a vehicle is set
+              /* if a vehicle selection is already made, updates selection area to show selected vehicle */
               if (make && model && year && trim) {
                 $('#choose_a_vehicle').html(year + ' ' + make + ' ' + model + ' ' + trim + '&nbsp;<i class="fa fa-car" aria-hidden="true"</i>');
                 $('#model_make, #model_name, #model_trim').prop('disabled', true);
-                // $('#model_make, #model_name, #model_trim, #model_year').hide();
                 $('#model_make, #model_name, #model_trim').val=('');
                 $('#model_year option:contains('+year+')').prop('selected', true);
                 $('#model_make').append($('<option>', {selected: 'selected', value: make, text: make}));
