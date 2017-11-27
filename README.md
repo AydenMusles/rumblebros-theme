@@ -1,6 +1,6 @@
 # Rumblebros Shopify Theme
 This is the custom District theme for our Shopify store rumblebrothers.com.  
-I do all theme development using the @Shopify [Slate](https://github.com/Shopify/slate/)
+I do all theme development using [Shopify's](https://github.com/Shopify) [Slate](https://github.com/Shopify/slate/)
 ## I've implemented a few custom features into this theme.
 1. Vehicle picker
     - Pulls years, makes, models from assets/models.json
